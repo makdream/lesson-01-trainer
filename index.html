@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 1 Trainer — Hello! Nice to Meet You</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2980 0%, #16213e 100%);
+            min-height: 100vh; color: #333;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        header {
+            background: white; border-radius: 20px; padding: 32px;
+            text-align: center; margin-bottom: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        header h1 {
+            font-size: 2em; margin-bottom: 8px;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        header p { color: #666; font-size: 1.05em; }
+        .lesson-info {
+            display: flex; justify-content: center; gap: 14px; margin-top: 16px; flex-wrap: wrap;
+        }
+        .lesson-info span {
+            background: #e8f4fd; color: #1a2980; padding: 6px 14px;
+            border-radius: 20px; font-size: 0.85em; font-weight: 500;
+        }
+        a.back {
+            display: inline-block; margin-top: 16px; color: #1a2980; font-weight: 600;
+        }
+        .tabs {
+            display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap;
+        }
+        .tab {
+            background: white; border: none; padding: 10px 20px; border-radius: 25px;
+            cursor: pointer; font-size: 0.95em; font-weight: 500; color: #666;
+            transition: all 0.3s; box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        .tab:hover { transform: translateY(-2px); }
+        .tab small { display: block; font-weight: 400; font-size: 0.72em; opacity: 0.85; margin-top: 2px; }
+        .tab.active { background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%); color: white; }
+        .section {
+            background: white; border-radius: 20px; padding: 30px;
+            margin-bottom: 25px; display: none; box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        }
+        .section.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h2 { color: #1a2980; margin-bottom: 6px; }
+        h3 { color: #1a2980; margin: 18px 0 10px; }
+        h4 { color: #1a2980; margin-bottom: 10px; }
+        .subtitle { color: #666; font-size: 0.95em; margin-bottom: 16px; }
+        .translation { color: #7b8894; font-size: 0.85em; font-style: italic; }
+        .instruction {
+            background: #e8f4fd; border-left: 4px solid #26d0ce;
+            padding: 12px 16px; border-radius: 0 10px 10px 0;
+            margin-bottom: 18px; color: #555; line-height: 1.6;
+        }
+        .question-box { margin-bottom: 16px; }
+        .question-box p { margin-bottom: 8px; font-weight: 500; }
+        .options { display: flex; flex-wrap: wrap; gap: 8px; }
+        .option-btn {
+            background: white; border: 2px solid #ddd; padding: 8px 18px;
+            border-radius: 10px; cursor: pointer; font-size: 0.95em; transition: all 0.2s;
+        }
+        .option-btn:hover { border-color: #26d0ce; background: #e8f4fd; }
+        .option-btn.selected { border-color: #1a2980; background: #1a2980; color: white; }
+        .option-btn.correct { border-color: #27ae60; background: #d4edda; color: #155724; }
+        .option-btn.incorrect { border-color: #e74c3c; background: #f8d7da; color: #721c24; }
+        .answer-select {
+            padding: 6px 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 0.95em;
+        }
+        .text-answer {
+            width: 100%; padding: 9px 14px; border: 2px solid #ddd;
+            border-radius: 10px; font-size: 1em; transition: border-color 0.2s;
+        }
+        .text-answer:focus { border-color: #26d0ce; outline: none; }
+        .btn {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white; border: none; padding: 11px 26px; border-radius: 12px;
+            font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(26,41,128,0.4); }
+        .btn-sm { padding: 7px 16px; font-size: 0.9em; }
+        .clear-btn { background: #fff; border: 2px solid #e74c3c; color: #e74c3c; }
+        .clear-btn:hover { background: #e74c3c; color: #fff; }
+        .feedback {
+            display: none; margin-top: 14px; padding: 14px; border-radius: 12px; text-align: center;
+        }
+        .feedback.show { display: block; animation: fadeIn 0.3s ease; }
+        .feedback.correct { background: #d4edda; color: #155724; }
+        .feedback.incorrect { background: #fff3cd; color: #856404; }
+        /* sentence builder */
+        .sb-build {
+            display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+            min-height: 52px; background: #fff; border: 2px dashed #26d0ce;
+            border-radius: 12px; padding: 10px 14px; margin-bottom: 10px;
+        }
+        .sb-token {
+            background: #1a2980; color: #fff; border-radius: 8px;
+            padding: 4px 10px; font-weight: 600; cursor: pointer; font-size: 0.95em;
+        }
+        .sb-token::after { content: " ×"; opacity: 0.7; font-weight: 400; }
+        .sb-wordlist { display: flex; flex-wrap: wrap; gap: 8px; }
+        .sb-chip {
+            background: #f0f3ff; border: 2px solid #1a2980; color: #1a2980;
+            border-radius: 10px; padding: 6px 14px; font-size: 0.95em;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .sb-chip:hover { background: #1a2980; color: #fff; }
+        .sb-chip.used { opacity: 0.35; background: #eee; border-color: #ccc; cursor: default; pointer-events: none; }
+        .sb-clear { margin-left: auto; background: none; border: 1px solid #ccc; color: #888; border-radius: 8px; padding: 4px 10px; cursor: pointer; font-size: 0.85em; }
+        .sb-hint { color: #e74c3c; font-size: 0.9em; margin-top: 6px; display: none; }
+        .sb-box.sb-bad { border: 2px solid #e74c3c; }
+        .sb-box.sb-ok { border: 2px solid #27ae60; }
+        .sb-box.sb-bad .sb-hint { display: block; }
+        /* matching game */
+        .match-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 560px; margin: 0 auto; }
+        .match-chip {
+            padding: 10px 14px; border-radius: 10px; border: 2px solid #ddd;
+            background: white; cursor: pointer; font-size: 0.95em; text-align: center;
+            transition: all 0.2s; user-select: none; -webkit-user-select: none;
+        }
+        .match-chip:hover { border-color: #26d0ce; background: #f0f3ff; }
+        .match-chip.en { font-weight: 700; color: #1a2980; }
+        .match-chip.ru { color: #555; }
+        .match-chip.selected { border-color: #1a2980; background: #1a2980; color: white; }
+        .match-chip.matched { border-color: #27ae60; background: #d4edda; color: #155724; cursor: default; }
+        .match-chip.wrong { border-color: #e74c3c; background: #f8d7da; color: #721c24; }
+        .match-game-score { text-align: center; margin: 12px 0; font-weight: 600; color: #1a2980; }
+        /* dictation */
+        .dict-row {
+            display: flex; align-items: center; gap: 10px;
+            background: #f8f9fa; padding: 8px 12px; border: 1px solid #eee; border-radius: 10px;
+        }
+        .dict-num { min-width: 22px; font-weight: 600; color: #1a2980; text-align: center; }
+        .dict-audio {
+            background: #26d0ce; color: #fff; border: none; border-radius: 10px;
+            width: 42px; height: 42px; font-size: 17px; cursor: pointer; flex-shrink: 0;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .dict-audio:hover { background: #1a2980; transform: scale(1.05); }
+        button:focus-visible, select:focus-visible, .text-answer:focus-visible {
+            outline: 3px solid #26d0ce; outline-offset: 2px;
+        }
+        footer {
+            text-align: center; color: rgba(255,255,255,0.7);
+            font-size: 0.9em; background: rgba(0,0,0,0.15);
+            border-radius: 14px; padding: 18px; margin-top: 10px;
+        }
+        @media (max-width: 560px) {
+            header { padding: 24px 16px; }
+            header h1 { font-size: 1.5em; }
+            .section { padding: 22px 16px; }
+            .options { flex-direction: column; }
+            .option-btn { width: 100%; }
+            .match-row { grid-template-columns: minmax(0, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Lesson 1 Trainer</h1>
+            <p>Hello! Nice to Meet You — тренируй слова, грамматику и построение фраз <span class="translation">Practice: words, grammar and sentence building</span></p>
+            <div class="lesson-info">
+                <span>Level A0 <span class="translation">Уровень</span></span>
+                <span>✍️ 5 exercises <span class="translation">упражнений</span></span>
+                <span>🎧 with audio <span class="translation">с озвучкой</span></span>
+            </div>
+            <a class="back" href="https://makdream.github.io/lesson-01-hello-introductions/" target="_blank">📖 Back to the lesson / На урок →</a>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="quiz">🧩 Quiz <br><small>Викторина</small></button>
+            <button class="tab" data-tab="grammar">📚 am / is / are <br><small>Грамматика</small></button>
+            <button class="tab" data-tab="sentences">🧱 Build Sentences <br><small>Собери фразы</small></button>
+            <button class="tab" data-tab="match">🔗 Match <br><small>Соедини</small></button>
+            <button class="tab" data-tab="dictation">🎧 Dictation <br><small>Диктант</small></button>
+        </div>
+
+        <!-- QUIZ -->
+        <div class="section active" id="quiz">
+            <h2>🧩 Quiz: Greetings &amp; Words <span class="translation">Викторина: приветствия и слова</span></h2>
+            <p class="subtitle">Choose the correct answer <span class="translation">Выбери правильный ответ</span></p>
+            <div class="instruction">Click on the answer. Tap «Check» at the bottom. <span class="translation">Нажми на ответ, затем внизу «Check».</span></div>
+
+            <div class="question-box quiz-q">
+                <p>1. «Привет» в английском — <span class="translation">«Hello» по-русски</span></p>
+                <div class="options">
+                    <button class="option-btn" data-correct="true">Hello</button>
+                    <button class="option-btn">Goodbye</button>
+                    <button class="option-btn">Sorry</button>
+                </div>
+            </div>
+            <div class="question-box quiz-q">
+                <p>2. Приветствие утром <span class="translation">Morning greeting</span></p>
+                <div class="options">
+                    <button class="option-btn">Good evening</button>
+                    <button class="option-btn" data-correct="true">Good morning</button>
+                    <button class="option-btn">Good night</button>
+                </div>
+            </div>
+            <div class="question-box quiz-q">
+                <p>3. «Как дела?» — <span class="translation">«How do you feel?» in English</span></p>
+                <div class="options">
+                    <button class="option-btn">What is your name?</button>
+                    <button class="option-btn">Where are you from?</button>
+                    <button class="option-btn" data-correct="true">How are you?</button>
+                </div>
+            </div>
+            <div class="question-box quiz-q">
+                <p>4. «До свидания» — <span class="translation">«See you later» synonym</span></p>
+                <div class="options">
+                    <button class="option-btn" data-correct="true">Goodbye</button>
+                    <button class="option-btn">Hello</button>
+                    <button class="option-btn">Please</button>
+                </div>
+            </div>
+            <div class="question-box quiz-q">
+                <p>5. «Приятно познакомиться» — <span class="translation">After the introduction</span></p>
+                <div class="options">
+                    <button class="option-btn">Thank you</button>
+                    <button class="option-btn" data-correct="true">Nice to meet you</button>
+                    <button class="option-btn">I'm fine</button>
+                </div>
+            </div>
+            <div class="question-box quiz-q">
+                <p>6. «Спасибо» — <span class="translation">«Thanks» in English</span></p>
+                <div class="options">
+                    <button class="option-btn" data-correct="true">Thank you</button>
+                    <button class="option-btn">Sorry</button>
+                    <button class="option-btn">Yes</button>
+                </div>
+            </div>
+            <div class="question-box quiz-q">
+                <p>7. «Извините» — <span class="translation">«Excuse me» in English</span></p>
+                <div class="options">
+                    <button class="option-btn">Please</button>
+                    <button class="option-btn">No</button>
+                    <button class="option-btn" data-correct="true">Sorry</button>
+                </div>
+            </div>
+            <div class="question-box quiz-q">
+                <p>8. «Я из Джакарты» — <span class="translation">«From Jakarta»</span></p>
+                <div class="options">
+                    <button class="option-btn">I am a driver.</button>
+                    <button class="option-btn" data-correct="true">I am from Jakarta.</button>
+                    <button class="option-btn">I am fine.</button>
+                </div>
+            </div>
+            <button class="btn" onclick="checkQuiz()">Check / Проверить</button>
+            <div class="feedback" id="quiz-feedback"></div>
+        </div>
+
+        <!-- GRAMMAR am/is/are -->
+        <div class="section" id="grammar">
+            <h2>📚 Choose am / is / are <span class="translation">Выбери am / is / are</span></h2>
+            <p class="subtitle">I am · he/she/it is · you/we/they are <span class="translation">(сокращения: I'm, He's, They're)</span></p>
+            <div class="question-box">
+                <p>1. I ___ a teacher. <span class="translation">Я учитель.</span></p>
+                <select class="answer-select" data-correct="am">
+                    <option value="">...</option><option>am</option><option>is</option><option>are</option>
+                </select>
+            </div>
+            <div class="question-box">
+                <p>2. She ___ from Bali. <span class="translation">Она из Бали.</span></p>
+                <select class="answer-select" data-correct="is">
+                    <option value="">...</option><option>am</option><option>is</option><option>are</option>
+                </select>
+            </div>
+            <div class="question-box">
+                <p>3. They ___ students. <span class="translation">Они студенты.</span></p>
+                <select class="answer-select" data-correct="are">
+                    <option value="">...</option><option>am</option><option>is</option><option>are</option>
+                </select>
+            </div>
+            <div class="question-box">
+                <p>4. My name ___ Anna. <span class="translation">Меня зовут Анна.</span></p>
+                <select class="answer-select" data-correct="is">
+                    <option value="">...</option><option>am</option><option>is</option><option>are</option>
+                </select>
+            </div>
+            <div class="question-box">
+                <p>5. We ___ happy. <span class="translation">Мы счастливы.</span></p>
+                <select class="answer-select" data-correct="are">
+                    <option value="">...</option><option>am</option><option>is</option><option>are</option>
+                </select>
+            </div>
+            <div class="question-box">
+                <p>6. He ___ my friend. <span class="translation">Он мой друг.</span></p>
+                <select class="answer-select" data-correct="is">
+                    <option value="">...</option><option>am</option><option>is</option><option>are</option>
+                </select>
+            </div>
+            <div class="question-box">
+                <p>7. You ___ a driver. <span class="translation">Ты водитель.</span></p>
+                <select class="answer-select" data-correct="are">
+                    <option value="">...</option><option>am</option><option>is</option><option>are</option>
+                </select>
+            </div>
+            <div class="question-box">
+                <p>8. It ___ a good day. <span class="translation">Это хороший день.</span></p>
+                <select class="answer-select" data-correct="is">
+                    <option value="">...</option><option>am</option><option>is</option><option>are</option>
+                </select>
+            </div>
+            <div class="question-box">
+                <p>9. I ___ not a doctor. <span class="translation">Я не врач.</span></p>
+                <select class="answer-select" data-correct="am">
+                    <option value="">...</option><option>am</option><option>is</option><option>are</option>
+                </select>
+            </div>
+            <div class="question-box">
+                <p>10. Anna and John ___ from Jakarta. <span class="translation">Анна и Джон из Джакарты.</span></p>
+                <select class="answer-select" data-correct="are">
+                    <option value="">...</option><option>am</option><option>is</option><option>are</option>
+                </select>
+            </div>
+            <button class="btn" onclick="checkAmIsAre()">Check / Проверить</button>
+            <div class="feedback" id="amisare-feedback"></div>
+        </div>
+
+        <!-- SENTENCE BUILDER -->
+        <div class="section" id="sentences">
+            <h2>🧱 Build the sentences <span class="translation">Собери предложения</span></h2>
+            <p class="subtitle">Tap the words in the correct order. Tap a word in the answer to remove it. <span class="translation">Нажимай слова в правильном порядке. Нажми на слово в ответе, чтобы убрать его.</span></p>
+
+            <div class="homework-box sb-box" style="background:#f8f9fa;">
+                <h4>1. “I am from Bali.” <span class="translation">Я из Бали.</span></h4>
+                <div class="sb-build" data-words="I,am,from,Bali" data-answer="I|am|from|Bali"><span class="sb-tokens"></span><span style="color:#aaa; font-size:0.9em;" class="sb-placeholder">click the words…</span><button class="sb-clear" type="button">✕ Reset</button></div>
+                <div class="sb-wordlist"></div>
+                <div class="sb-hint"><span class="translation">Начни с "I"</span></div>
+            </div>
+
+            <div class="homework-box sb-box" style="background:#f8f9fa;">
+                <h4>2. “My name is Anna.” <span class="translation">Меня зовут Анна.</span></h4>
+                <div class="sb-build" data-words="Anna,My,name,is" data-answer="My|name|is|Anna"><span class="sb-tokens"></span><span style="color:#aaa; font-size:0.9em;" class="sb-placeholder">click the words…</span><button class="sb-clear" type="button">✕ Reset</button></div>
+                <div class="sb-wordlist"></div>
+                <div class="sb-hint"><span class="translation">Начни с "My"</span></div>
+            </div>
+
+            <div class="homework-box sb-box" style="background:#f8f9fa;">
+                <h4>3. “Are you a teacher?” <span class="translation">Ты учитель? (вопрос)</span></h4>
+                <div class="sb-build" data-words="teacher,you,a,Are" data-answer="Are|you|a|teacher?"><span class="sb-tokens"></span><span style="color:#aaa; font-size:0.9em;" class="sb-placeholder">click the words…</span><button class="sb-clear" type="button">✕ Reset</button></div>
+                <div class="sb-wordlist"></div>
+                <div class="sb-hint"><span class="translation">В вопросе глагол стоит первым</span></div>
+            </div>
+
+            <div class="homework-box sb-box" style="background:#f8f9fa;">
+                <h4>4. “I am not a doctor.” <span class="translation">Я не врач.</span></h4>
+                <div class="sb-build" data-words="a,not,doctor,I,am" data-answer="I|am|not|a|doctor."><span class="sb-tokens"></span><span style="color:#aaa; font-size:0.9em;" class="sb-placeholder">click the words…</span><button class="sb-clear" type="button">✕ Reset</button></div>
+                <div class="sb-wordlist"></div>
+                <div class="sb-hint"><span class="translation">Отрицание: am + not</span></div>
+            </div>
+
+            <div class="homework-box sb-box" style="background:#f8f9fa;">
+                <h4>5. “Nice to meet you.” <span class="translation">Приятно познакомиться.</span></h4>
+                <div class="sb-build" data-words="you,meet,to,Nice" data-answer="Nice|to|meet|you."><span class="sb-tokens"></span><span style="color:#aaa; font-size:0.9em;" class="sb-placeholder">click the words…</span><button class="sb-clear" type="button">✕ Reset</button></div>
+                <div class="sb-wordlist"></div>
+                <div class="sb-hint"><span class="translation">Начни со слова "Nice"</span></div>
+            </div>
+
+            <div class="homework-box sb-box" style="background:#f8f9fa;">
+                <h4>6. “They are not from Jakarta.” <span class="translation">Они не из Джакарты.</span></h4>
+                <div class="sb-build" data-words="from,Jakarta,not,They,are" data-answer="They|are|not|from|Jakarta."><span class="sb-tokens"></span><span style="color:#aaa; font-size:0.9em;" class="sb-placeholder">click the words…</span><button class="sb-clear" type="button">✕ Reset</button></div>
+                <div class="sb-wordlist"></div>
+                <div class="sb-hint"><span class="translation">Отрицание: are + not</span></div>
+            </div>
+
+            <button class="btn" onclick="checkSentences()">Check / Проверить</button>
+            <div class="feedback" id="sentences-feedback"></div>
+        </div>
+
+        <!-- MATCH -->
+        <div class="section" id="match">
+            <h2>🔗 Match English ↔ Russian <span class="translation">Соедини английское и русское</span></h2>
+            <p class="subtitle">Click an English word, then its Russian translation. Find all 8 pairs! <span class="translation">Нажми английское слово, затем — русский перевод. Найди все 8 пар!</span></p>
+            <div class="match-game-score">Matched: <strong id="mtch-score">0</strong>/8</div>
+            <div class="match-row" id="mtch-row"></div>
+            <div style="text-align:center; margin-top:14px;">
+                <button class="btn btn-sm" onclick="initMtch()">🔄 New Game / Новая игра</button>
+            </div>
+        </div>
+
+        <!-- DICTATION -->
+        <div class="section" id="dictation">
+            <h2>🎧 Dictation: Listen and write <span class="translation">Диктант: послушай и запиши</span></h2>
+            <p class="subtitle">Tap 🔊 to hear a word (or ▶️ Play all), then type it. <span class="translation">Послушай слово и напиши его.</span></p>
+            <div style="display:grid; gap:10px; max-width:520px; margin:0 auto; margin-bottom:14px;">
+                <div class="dict-row"><span class="dict-num">1.</span><button class="dict-audio dict-word" data-word="Hello" title="Listen">🔊</button><input type="text" class="text-answer dict-input" data-correct="Hello" placeholder="type..." autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1; min-width:0;"></div>
+                <div class="dict-row"><span class="dict-num">2.</span><button class="dict-audio dict-word" data-word="Goodbye" title="Listen">🔊</button><input type="text" class="text-answer dict-input" data-correct="Goodbye" placeholder="type..." autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1; min-width:0;"></div>
+                <div class="dict-row"><span class="dict-num">3.</span><button class="dict-audio dict-word" data-word="Thank you" title="Listen">🔊</button><input type="text" class="text-answer dict-input" data-correct="Thank you" placeholder="type..." autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1; min-width:0;"></div>
+                <div class="dict-row"><span class="dict-num">4.</span><button class="dict-audio dict-word" data-word="Please" title="Listen">🔊</button><input type="text" class="text-answer dict-input" data-correct="Please" placeholder="type..." autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1; min-width:0;"></div>
+                <div class="dict-row"><span class="dict-num">5.</span><button class="dict-audio dict-word" data-word="Sorry" title="Listen">🔊</button><input type="text" class="text-answer dict-input" data-correct="Sorry" placeholder="type..." autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1; min-width:0;"></div>
+                <div class="dict-row"><span class="dict-num">6.</span><button class="dict-audio dict-word" data-word="Teacher" title="Listen">🔊</button><input type="text" class="text-answer dict-input" data-correct="Teacher" placeholder="type..." autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1; min-width:0;"></div>
+                <div class="dict-row"><span class="dict-num">7.</span><button class="dict-audio dict-word" data-word="Doctor" title="Listen">🔊</button><input type="text" class="text-answer dict-input" data-correct="Doctor" placeholder="type..." autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1; min-width:0;"></div>
+                <div class="dict-row"><span class="dict-num">8.</span><button class="dict-audio dict-word" data-word="Student" title="Listen">🔊</button><input type="text" class="text-answer dict-input" data-correct="Student" placeholder="type..." autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1; min-width:0;"></div>
+            </div>
+            <div style="text-align:center;">
+                <button class="btn btn-sm" onclick="playDictation()">▶️ Play all / Проиграть все</button>
+                <button class="btn btn-sm" onclick="checkDictation()">Check / Проверить</button>
+                <button class="btn btn-sm clear-btn" onclick="clearDictation()">🗑 Clear / Очистить</button>
+            </div>
+            <div class="feedback" id="dict-feedback"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>🎯 Lesson 1 Trainer — Hello! Nice to Meet You (A0)</p>
+        <p>Made for <a href="https://makdream.github.io/lesson-01-hello-introductions/" style="color:#9fd7ff;" target="_blank">the lesson</a> · English for Beginners</p>
+    </footer>
+
+    <script>
+        // ===== TABS =====
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ===== TTS =====
+        function speakWord(text) {
+            if (!('speechSynthesis' in window)) return;
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            const voices = speechSynthesis.getVoices();
+            const en = voices.find(v => v.lang === 'en-US' || v.lang === 'en-GB') || null;
+            if (en) u.voice = en;
+            u.lang = 'en-US';
+            u.rate = 0.8;
+            speechSynthesis.speak(u);
+        }
+
+        // ===== QUIZ =====
+        document.querySelectorAll('#quiz .option-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const box = this.closest('.question-box');
+                box.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+        function checkQuiz() {
+            const boxes = document.querySelectorAll('#quiz .quiz-q');
+            let correct = 0;
+            boxes.forEach(box => {
+                const sel = box.querySelector('.option-btn.selected');
+                if (!sel) return;
+                if (sel.dataset.correct) {
+                    correct++;
+                    sel.classList.add('correct');
+                } else {
+                    sel.classList.add('incorrect');
+                    const good = box.querySelector('.option-btn[data-correct]');
+                    if (good) good.classList.add('correct');
+                }
+            });
+            const fb = document.getElementById('quiz-feedback');
+            fb.classList.add('show');
+            fb.className = `feedback show ${correct === boxes.length ? 'correct' : 'incorrect'}`;
+            fb.innerHTML = `<h4>${correct === boxes.length ? '🎉 Perfect! / Отлично!' : '📝 Результат: ' + correct + '/' + boxes.length}</h4>`;
+        }
+
+        // ===== AM / IS / ARE =====
+        function checkAmIsAre() {
+            const selects = document.querySelectorAll('#grammar .answer-select');
+            let correct = 0;
+            selects.forEach(sel => {
+                if (sel.value.trim().toLowerCase() === sel.dataset.correct.toLowerCase()) {
+                    correct++;
+                    sel.style.borderColor = '#27ae60'; sel.style.backgroundColor = '#d4edda';
+                } else {
+                    sel.style.borderColor = '#e74c3c'; sel.style.backgroundColor = '#f8d7da';
+                    sel.value = sel.value + ' → ' + sel.dataset.correct;
+                }
+            });
+            const fb = document.getElementById('amisare-feedback');
+            fb.classList.add('show');
+            fb.className = `feedback show ${correct === selects.length ? 'correct' : 'incorrect'}`;
+            fb.innerHTML = `<h4>${correct === selects.length ? '🎉 Perfect! / Отлично!' : '📝 Результат: ' + correct + '/' + selects.length}</h4>`;
+        }
+
+        // ===== SENTENCE BUILDER =====
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+        initSentenceBuilders();
+        function initSentenceBuilders() {
+            document.querySelectorAll('.sb-box').forEach(box => {
+                const build = box.querySelector('.sb-build');
+                const words = build.dataset.words.split(',');
+                const list = box.querySelector('.sb-wordlist');
+                const tokens = box.querySelector('.sb-tokens');
+                const ph = box.querySelector('.sb-placeholder');
+                box.sbState = { words: words.slice(), stack: [] };
+                shuffleArray(words.slice()).forEach(w => {
+                    const c = document.createElement('button');
+                    c.type = 'button'; c.className = 'sb-chip'; c.textContent = w;
+                    c.addEventListener('click', () => {
+                        box.sbState.stack.push(w);
+                        c.classList.add('used');
+                        renderBuild(box, c);
+                    });
+                    list.appendChild(c);
+                });
+                build.querySelector('.sb-clear').addEventListener('click', () => resetBuild(box));
+            });
+        }
+        function renderBuild(box, clicked) {
+            const build = box.querySelector('.sb-build');
+            const tokens = box.querySelector('.sb-tokens');
+            const ph = box.querySelector('.sb-placeholder');
+            tokens.innerHTML = box.sbState.stack.length ? '<span class="sb-token">' + box.sbState.stack.join('</span><span class="sb-token">') + '</span>' : '';
+            ph.style.display = box.sbState.stack.length ? 'none' : 'inline';
+            build.querySelectorAll('.sb-token').forEach((t, i) => {
+                t.addEventListener('click', () => removeToken(box, i));
+            });
+            box.classList.remove('sb-ok', 'sb-bad');
+        }
+        function removeToken(box, index) {
+            const removed = box.sbState.stack[index];
+            box.sbState.stack.splice(index, 1);
+            const list = box.querySelector('.sb-wordlist');
+            const chip = [...list.querySelectorAll('.sb-chip')].find(c => c.classList.contains('used') && c.textContent === removed);
+            if (chip) { chip.classList.remove('used'); }
+            renderBuild(box);
+        }
+        function resetBuild(box) {
+            box.sbState.stack = [];
+            box.querySelectorAll('.sb-chip').forEach(c => c.classList.remove('used'));
+            renderBuild(box);
+        }
+        function checkSentences() {
+            const boxes = document.querySelectorAll('#sentences .sb-box');
+            let correct = 0;
+            boxes.forEach(box => {
+                const build = box.querySelector('.sb-build');
+                const exp = build.dataset.answer;
+                const got = box.sbState.stack.join('|');
+                const ok = got === exp;
+                if (ok) { correct++; box.classList.add('sb-ok'); box.classList.remove('sb-bad'); }
+                else {
+                    box.classList.add('sb-bad'); box.classList.remove('sb-ok');
+                    box.querySelector('.sb-hint').innerHTML = '✅ ' + exp.replace(/\|/g, ' ') +
+                        ' <span class="translation">— правильный порядок</span>';
+                }
+            });
+            const fb = document.getElementById('sentences-feedback');
+            fb.classList.add('show');
+            fb.className = `feedback show ${correct === boxes.length ? 'correct' : 'incorrect'}`;
+            fb.innerHTML = `<h4>${correct === boxes.length ? '🎉 Perfect! / Отлично!' : '📝 Результат: ' + correct + '/' + boxes.length}</h4>` +
+                `<p>${correct === boxes.length ? 'You can build English sentences! / Ты умеешь строить английские предложения!' : 'Click ✕ on a word to remove and try again. / Убери лишнее слово и попробуй снова.'}</p>`;
+        }
+
+        // ===== MATCHING GAME =====
+        const mtchPairs = [
+            { en: 'Hello', ru: 'Привет' },
+            { en: 'Good morning', ru: 'Доброе утро' },
+            { en: 'Goodbye', ru: 'До свидания' },
+            { en: 'Thank you', ru: 'Спасибо' },
+            { en: 'Please', ru: 'Пожалуйста' },
+            { en: 'Sorry', ru: 'Извините' },
+            { en: 'Nice to meet you', ru: 'Приятно познакомиться' },
+            { en: 'How are you?', ru: 'Как дела?' }
+        ];
+        let mtSel = null, mtDone = 0, mtLock = false;
+        const mtTotal = mtchPairs.length;
+        function initMtch() {
+            const row = document.getElementById('mtch-row');
+            if (!row) return;
+            row.innerHTML = '';
+            mtSel = null; mtDone = 0; mtLock = false;
+            document.getElementById('mtch-score').textContent = '0';
+            const en = mtchPairs.slice(), ru = mtchPairs.slice();
+            shuffleArray(en); shuffleArray(ru);
+            for (let i = 0; i < mtTotal; i++) {
+                const cE = document.createElement('button');
+                cE.type = 'button'; cE.className = 'match-chip en';
+                cE.textContent = en[i].en; cE.dataset.pair = mtchPairs.indexOf(en[i]);
+                const cR = document.createElement('button');
+                cR.type = 'button'; cR.className = 'match-chip ru';
+                cR.textContent = ru[i].ru; cR.dataset.pair = mtchPairs.indexOf(ru[i]);
+                cE.addEventListener('click', () => mtPick(cE));
+                cR.addEventListener('click', () => mtPick(cR));
+                row.appendChild(cE); row.appendChild(cR);
+            }
+        }
+        function mtPick(chip) {
+            if (mtLock || chip.classList.contains('matched')) return;
+            if (chip.classList.contains('selected')) { chip.classList.remove('selected'); mtSel = null; return; }
+            if (mtSel === null) {
+                if (chip.classList.contains('en')) { chip.classList.add('selected'); mtSel = chip; }
+                return;
+            }
+            const first = mtSel;
+            if (chip.classList.contains('en')) {
+                first.classList.remove('selected'); chip.classList.add('selected'); mtSel = chip; return;
+            }
+            mtSel = null;
+            if (String(first.dataset.pair) === String(chip.dataset.pair)) {
+                first.classList.remove('selected');
+                first.classList.add('matched'); chip.classList.add('matched');
+                mtDone++;
+                document.getElementById('mtch-score').textContent = String(mtDone) + (mtDone === mtTotal ? ' 🎉' : '');
+            } else {
+                mtLock = true;
+                first.classList.add('wrong'); chip.classList.add('wrong');
+                setTimeout(() => {
+                    first.classList.remove('selected', 'wrong');
+                    chip.classList.remove('wrong'); mtLock = false;
+                }, 650);
+            }
+        }
+        initMtch();
+
+        // ===== DICTATION =====
+        document.querySelectorAll('.dict-word').forEach(btn => {
+            btn.addEventListener('click', () => { const w = btn.dataset.word; if (w) speakWord(w); });
+        });
+        function playDictation() {
+            if (!('speechSynthesis' in window)) return;
+            speechSynthesis.cancel();
+            const words = [...document.querySelectorAll('#dictation .dict-word')];
+            const voices = speechSynthesis.getVoices();
+            const en = voices.find(v => v.lang === 'en-US' || v.lang === 'en-GB') || null;
+            words.forEach((btn, i) => {
+                setTimeout(() => {
+                    speechSynthesis.cancel();
+                    const u = new SpeechSynthesisUtterance(btn.dataset.word);
+                    if (en) u.voice = en;
+                    u.lang = 'en-US'; u.rate = 0.65;
+                    speechSynthesis.speak(u);
+                }, i * 3500);
+            });
+        }
+        function checkDictation() {
+            const inputs = document.querySelectorAll('#dictation .dict-input');
+            const total = inputs.length;
+            let correct = 0;
+            inputs.forEach(input => {
+                const user = input.value.trim().toLowerCase().replace(/\s+/g, ' ');
+                const exp = input.dataset.correct.toLowerCase().replace(/\s+/g, ' ');
+                if (user === exp) {
+                    correct++;
+                    input.style.borderColor = '#27ae60'; input.style.backgroundColor = '#d4edda';
+                } else {
+                    input.style.borderColor = '#e74c3c'; input.style.backgroundColor = '#f8d7da';
+                    input.value = input.value + ' → ' + input.dataset.correct;
+                }
+            });
+            const fb = document.getElementById('dict-feedback');
+            fb.classList.add('show');
+            fb.className = `feedback show ${correct === total ? 'correct' : 'incorrect'}`;
+            fb.innerHTML = `<h4>${correct === total ? '🎉 Perfect spelling! / Отлично!' : '📝 Результат: ' + correct + '/' + total}</h4>`;
+        }
+        function clearDictation() {
+            document.querySelectorAll('#dictation .dict-input').forEach(input => {
+                input.value = '';
+                input.style.borderColor = ''; input.style.backgroundColor = '';
+            });
+            const fb = document.getElementById('dict-feedback');
+            fb.classList.remove('show'); fb.className = 'feedback';
+        }
+    </script>
+</body>
+</html>
